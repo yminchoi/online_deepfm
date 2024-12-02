@@ -243,3 +243,27 @@ def maxlen_lookup(X, sparse_input_dict, maxlen_column):
         raise ValueError('please add max length column for VarLenSparseFeat of DIN/DIEN input')
     lookup_idx = np.array(sparse_input_dict[maxlen_column[0]])
     return X[:, lookup_idx[0]:lookup_idx[1]].long()
+
+
+
+def feature_format_deepfm(data, encoders, sparse_features, dense_features, embedding_dim):
+
+    print(f"5. feature embedding - embedding size {embedding_dim}")
+    
+    spar_feat_list = [
+        SparseFeat(
+            feat,
+            vocabulary_size=len(encoders[feat].classes_) + 1,
+            embedding_dim=embedding_dim
+        )
+        for feat in sparse_features
+    ]
+    
+    dense_feat_list = [DenseFeat(feat, 1, ) for feat in dense_features]
+    fixlen_feature_columns = spar_feat_list + dense_feat_list
+
+    dnn_feature_columns = fixlen_feature_columns
+    linear_feature_columns = fixlen_feature_columns
+    feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
+
+    return dnn_feature_columns, linear_feature_columns, feature_names
